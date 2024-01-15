@@ -37,7 +37,10 @@ class TaskController {
     }
 
     async createTask(req: Request, res: Response) {
-        const { title, description } = req.body;
+        const { title, description }: {
+            title: string;
+            description: string;
+        } = req.body;
 
         try {
             const task = await prisma.task.create({

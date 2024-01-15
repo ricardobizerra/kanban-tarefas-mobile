@@ -2,6 +2,9 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { View, Text, TextInput, Button, TouchableOpacity, StyleSheet, Dimensions, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
+
+import styles from './styles';
 
 interface AddTaskProps {
     showModal: boolean;
@@ -21,9 +24,23 @@ const AddTask = ({showModal, setShowModal}: AddTaskProps) => {
         },
     });
 
-    const onSubmit = (data: AddTaskFormProps) => {
-        console.log(data);
-        setShowModal(false);
+    const onSubmit = async (data: AddTaskFormProps) => {
+
+        const { title, description } = data;
+
+        try {
+            const response = await axios.post(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/tasks`, {
+                title,
+                description,
+            });
+
+            console.log(response.data);
+
+            setShowModal(false);
+        } catch (error) {
+            console.error(error);
+        }
+        
     };
 
     return (
@@ -88,55 +105,5 @@ const AddTask = ({showModal, setShowModal}: AddTaskProps) => {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    modal: {
-        width: Dimensions.get('window').width - 64,
-        height: 500,
-        backgroundColor: '#fff',
-        position: 'absolute',
-        top: Dimensions.get('window').height / 2 - 250,
-        left: 32,
-        borderRadius: 16,
-        padding: 32,
-    },
-    closeButton: {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-    },
-    button: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        padding: 8,
-        marginBottom: 16,
-    },
-    buttonVariantSecondary: {
-        backgroundColor: '#010415',
-    },
-    buttonText: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#010415',
-    },
-    buttonTextVariantSecondary: {
-        color: '#fff',
-    },
-    heading: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 8,
-        marginBottom: 16,
-    },
-});
 
 export default AddTask;
