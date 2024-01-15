@@ -56,6 +56,58 @@ class TaskController {
             })
         }
     }
+
+    async updateTaskStatus(req: Request, res: Response) {
+        const { id } = req.params;
+        const { status, concludedAt }: {
+            status: "TO_DO" | "IN_PROGRESS" | "DONE";
+            concludedAt: Date;
+        } = req.body;
+
+        try {
+            const task = await prisma.task.update({
+                where: {
+                    id,
+                },
+                data: {
+                    status,
+                    concludedAt
+                },
+            });
+
+            return res.status(200).json({
+                data: task,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                error,
+            })
+        }
+    }
+
+    async updateTaskStar(req: Request, res: Response) {
+        const { id } = req.params;
+        const star = req.body.star as boolean;
+
+        try {
+            const task = await prisma.task.update({
+                where: {
+                    id,
+                },
+                data: {
+                    star,
+                },
+            });
+
+            return res.status(200).json({
+                data: task,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                error,
+            })
+        }
+    }
 }
 
 export default new TaskController();
