@@ -35,6 +35,27 @@ class TaskController {
             })
         }
     }
+
+    async createTask(req: Request, res: Response) {
+        const { title, description } = req.body;
+
+        try {
+            const task = await prisma.task.create({
+                data: {
+                    title,
+                    description,
+                },
+            });
+
+            return res.status(201).json({
+                data: task,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                error,
+            })
+        }
+    }
 }
 
 export default new TaskController();
