@@ -1,7 +1,8 @@
-import { Text, View } from "react-native";
+import { Dimensions, Text, View } from "react-native";
 import styles from "./styles";
 import AddTask from "../AddTask";
 import { useState } from "react";
+import Line from "../Line";
 
 export default function Header() {
     const [showModal, setShowModal] = useState(false);
@@ -14,6 +15,8 @@ export default function Header() {
                 showModal={showModal}
                 setShowModal={setShowModal}
             />
+
+            <Line />
         </View>
     )
 }

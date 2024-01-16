@@ -2,10 +2,11 @@ import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        display: "flex",
         backgroundColor: "#010415",
         alignItems: 'center',
         justifyContent: 'flex-start',
+        marginBottom: 16,
     },
     h1: {
         fontSize: 24,

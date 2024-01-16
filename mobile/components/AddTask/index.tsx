@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
 import styles from './styles';
+import { useTasks } from '../../contexts/TasksContext';
 
 interface AddTaskProps {
     showModal: boolean;
@@ -16,7 +17,12 @@ interface AddTaskFormProps {
     description: string;
 }
 
-const AddTask = ({showModal, setShowModal}: AddTaskProps) => {
+const AddTask = ({ showModal, setShowModal }: AddTaskProps) => {
+    const {
+        tasks,
+        setTasks,
+    } = useTasks();
+
     const { control, register, handleSubmit } = useForm<AddTaskFormProps>({
         defaultValues: {
             title: '',
@@ -34,9 +40,9 @@ const AddTask = ({showModal, setShowModal}: AddTaskProps) => {
                 description,
             });
 
-            console.log(response.data);
-
+            setTasks([...(tasks || []), response.data.data]);
             setShowModal(false);
+
         } catch (error) {
             console.error(error);
         }
