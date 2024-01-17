@@ -41,6 +41,14 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         marginBottom: 16,
     },
+    taskTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    taskDescription: {
+        fontSize: 16,
+        marginBottom: 16,
+    },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',

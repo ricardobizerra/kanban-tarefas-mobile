@@ -1,18 +1,17 @@
 import { Dimensions, Text, View } from "react-native";
 import styles from "./styles";
-import { PieChart } from "react-native-chart-kit";
+import { PieChart, LineChart } from "react-native-chart-kit";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Task from "../../interfaces/Task";
 import TaskByStatusInterface from "../../interfaces/TasksByStatus";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function Stats() {
-    const { data, isFetching, refetch } = useQuery('tasks', async () => {
+    const { data, isFetching } = useQuery('tasks', async () => {
         const response = await axios.get(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/tasks`);
         return response.data.data;
-    }, {
-        refetchInterval: 1000
     });
 
     const [tasksByStatus, setTasksByStatus] = useState<{
@@ -20,6 +19,11 @@ export default function Stats() {
         number: number;
         color: string;
         legendFontColor: string;
+    }[]>([]);
+
+    const [completedTasksByDate, setCompletedTasksByDate] = useState<{
+        date: string;
+        count: number;
     }[]>([]);
 
     const organizeTasksByStatus = () => {
@@ -36,8 +40,27 @@ export default function Stats() {
             legendFontColor: string;
         }[] = [];
 
+        const completedTasksByDate: {
+            date: string;
+            count: number;
+        }[] = [];
+
         data?.forEach((task: Task) => {
             tasksByStatus[task.status].push(task);
+
+            if (task.status === "DONE") {
+                const completionDate = task.concludedAt.toString().split("T")[0];
+
+                const existingDate = completedTasksByDate.find(item => item.date === completionDate);
+                if (existingDate) {
+                    existingDate.count++;
+                } else {
+                    completedTasksByDate.push({
+                        date: completionDate,
+                        count: 1,
+                    });
+                }
+            }
         });
 
         for (const key in tasksByStatus) {
@@ -50,6 +73,14 @@ export default function Stats() {
         }
 
         setTasksByStatus(numberTasksByStatus);
+        setCompletedTasksByDate(
+            completedTasksByDate.sort((a, b) => {
+                const aDate = new Date(a.date);
+                const bDate = new Date(b.date);
+
+                return aDate.getTime() - bDate.getTime();
+            })
+        );
     };
 
     useEffect(() => {
@@ -59,11 +90,13 @@ export default function Stats() {
     }, [isFetching]);
 
     return (
-        <View>
-            <Text style={styles.title}>Tasks por Status</Text>
+        <ScrollView
+            style={styles.scrollView}
+        >
+            <Text style={styles.title}>Tarefas por Status</Text>
             <PieChart 
                 data={tasksByStatus}
-                width={Dimensions.get("window").width - 16}
+                width={Dimensions.get("window").width - 32}
                 height={250}
                 chartConfig={{
                     color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
@@ -73,13 +106,29 @@ export default function Stats() {
                 paddingLeft="10"
                 center={[10, 0]}
                 absolute
-                style={{
-                    marginVertical: 8,
-                    borderWidth: 1,
-                    borderRadius: 10,
-                    borderColor: "#fff",
-                }}
+                style={styles.chart}
             />
-        </View>
+
+            <Text style={styles.title}>Tarefas Completas por Data</Text>
+            {completedTasksByDate.length > 0 && <LineChart
+                data={{
+                    labels: completedTasksByDate.map(item => item.date.split("-").reverse().join("/")),
+                    datasets: [
+                        {
+                            data: completedTasksByDate.map(item => item.count),
+                        },
+                    ],
+                }}
+                width={Dimensions.get("window").width - 32}
+                height={250}
+                chartConfig={{
+                    color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                    strokeWidth: 2,
+                }}
+                transparent
+                fromZero
+                style={styles.chart}
+            />}
+        </ScrollView>
     )
 }

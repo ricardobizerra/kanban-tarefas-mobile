@@ -15,10 +15,10 @@ export default function Header() {
             <Text style={styles.p}>Organize suas tarefas de forma simples e fácil</Text>
 
             <View style={styles.buttonsContainer}>
-                <AddTask
+                {pathname === "/" && <AddTask
                     showModal={showModal}
                     setShowModal={setShowModal}
-                />
+                />}
 
                 {pathname === "/" ? (
                     <Link href="/stats" asChild>

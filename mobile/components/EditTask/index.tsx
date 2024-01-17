@@ -116,11 +116,13 @@ const EditTask = ({ taskToEdit, showModal, setShowModal }: EditTaskProps) => {
                             <Ionicons name="close" size={24} color="#010415" />
                         </TouchableOpacity>
                         <View>
-                            <Text style={styles.heading}>Add Task</Text>
+                            <Text style={styles.heading}>Alterar Task</Text>
+                            <Text style={styles.taskTitle}>{taskToEdit?.title}</Text>
+                            <Text style={styles.taskDescription}>{taskToEdit?.description}</Text>
+
                             <View>
 
                                 <Text>Status</Text>
-
                                 <SegmentedControl
                                     values={['Para Fazer', 'Em Progresso', 'Feito']}
                                     selectedIndex={value === 'TO_DO' ? 0 : value === 'IN_PROGRESS' ? 1 : 2}

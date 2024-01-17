@@ -9,6 +9,7 @@ import TaskByStatusInterface from '../interfaces/TasksByStatus';
 import Task from '../interfaces/Task';
 import styles from './styles';
 import EditTask from '../components/EditTask';
+import { useRouter } from 'expo-router';
 
 const taskStatusNames: {
   [key: string]: string
