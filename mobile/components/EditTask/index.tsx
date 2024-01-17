@@ -40,8 +40,6 @@ const EditTask = ({ taskToEdit, showModal, setShowModal }: EditTaskProps) => {
         setValue(value);
     }
 
-    console.log(taskToEdit?.status, value);
-
     const onSubmit = async (data: EditTaskFormProps) => {
 
         const { star, status } = data;
