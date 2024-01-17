@@ -1,5 +1,12 @@
 # KanbanApp
 
+## Sumário
+
+1. [Funcionalidades](#funcionalidades)
+2. [Vídeo de demonstração](#vídeo-de-demonstração)
+3. [Como rodar](#como-rodar)
+4. [Tecnologias](#tecnologias)
+
 ## Funcionalidades
 
 - Listar tarefas por status ("Para Fazer", "Em Progresso" e "Concluída")
@@ -33,3 +40,14 @@ https://github.com/ricardobizerra/kanban-tarefas-mobile/assets/88413847/0dcfaab1
   sudo ifconfig
   ```
   4. Rode `npm run start` para iniciar o app
+
+## Tecnologias
+
+- React Native
+- React Hook Form
+- React Native Chart Kit
+- React Native Draggable Flatlist
+- React Query
+- Express
+- Prisma
+- TypeScript
