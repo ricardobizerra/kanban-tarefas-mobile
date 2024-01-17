@@ -1,12 +1,14 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import DraggableFlatList from 'react-native-draggable-flatlist';
 
 import { useTasks } from '../contexts/TasksContext';
 import TaskByStatusInterface from '../interfaces/TasksByStatus';
 import Task from '../interfaces/Task';
 import styles from './styles';
+import EditTask from '../components/EditTask';
 
 const taskStatusNames: {
   [key: string]: string
@@ -30,7 +32,10 @@ export default function App() {
     setTasks,
   } = useTasks();
 
-  const { data, isFetching } = useQuery('tasks', async () => {
+  const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+
+  const { data, isFetching, refetch } = useQuery('tasks', async () => {
     const response = await axios.get(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/tasks`);
     return response.data.data;
   }, {
@@ -54,6 +59,18 @@ export default function App() {
       tasksByStatus[task.status].push(task);
     });
 
+    Object.entries(tasksByStatus).forEach(([status, tasksStatusArray]) => {
+      tasksStatusArray.sort((a: Task, b: Task) => {
+        if (a.star && !b.star) {
+          return -1;
+        } else if (!a.star && b.star) {
+          return 1;
+        } else {
+          return a.position - b.position;
+        }
+      });
+    });
+
     setTasksByStatus(tasksByStatus);
   };
 
@@ -63,33 +80,92 @@ export default function App() {
     }
   }, [isFetching, tasks]);
 
-  return (
-    <ScrollView>
-      {
-        Object.entries(tasksByStatus).map(([status, tasksStatusArray]) => (
-          <View 
-            key={status}
-            style={styles.taskStatusContainer}
-          >
-            <Text
-              style={[styles.taskStatusTitle, { backgroundColor: taskStatusColors[status] }]}
-            >
-              {taskStatusNames[status]}
-            </Text>
-            {
-              tasksStatusArray.map((task: Task) => (
-                <View
-                  key={task.id}
-                  style={styles.taskContainer}
-                >
-                  <Text style={styles.taskTitle}>{task.title}</Text>
-                  <Text style={styles.taskDescription}>{task.description}</Text>
-                </View>
-              ))
+  useEffect(() => {
+    async function updatePositions() {
+      Object.entries(tasksByStatus).forEach(([status, tasksStatusArray]) => {
+        tasksStatusArray.forEach(async (task: Task, index: number) => {
+          if (task.position !== index) {
+            await updateTaskPosition(task.id, index);
+          }
+        });
+      });
+    }
+
+    updatePositions();
+  }, []);
+
+  const updateTaskStatus = async (taskId: string, newStatus: string) => {
+    try {
+      await axios.put(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/tasks/${taskId}`, { status: newStatus });
+      refetch();
+    } catch (error) {
+      console.error('Error updating task status:', error);
+    }
+  };
+
+  const updateTaskPosition = async (taskId: string, newPosition: number) => {
+    try {
+      await axios.put(`http://${process.env.EXPO_PUBLIC_IP_ADDRESS}:3001/position-task/${taskId}`, { position: newPosition });
+      refetch();
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      console.error('Error updating task position:', axiosError.response?.data);
+    }
+  }
+
+  const renderItem = ({ item, drag }: { item: Task, drag: () => void }) => (
+    <TouchableOpacity
+      key={item.id}
+      style={styles.taskContainer}
+      onLongPress={drag}
+      onPress={() => {
+        setTaskToEdit(item);
+        setShowEditTaskModal(true);
+      }}
+    >
+      <Text style={styles.taskTitle}>{item.star ? '⭐️ ' : ''}{item.title}</Text>
+      <Text style={styles.taskDescription}>{item.description}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderStatusContainer = ([status, tasksStatusArray]: [string, Task[]]) => (
+    <View 
+      key={status}
+      style={styles.taskStatusContainer}
+    >
+      <Text
+        style={[styles.taskStatusTitle, { backgroundColor: taskStatusColors[status] }]}
+      >
+        {taskStatusNames[status]}
+      </Text>
+      <DraggableFlatList
+        data={tasksStatusArray}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        onDragEnd={({ data }) => {
+          const updatedTasksByStatus = { ...tasksByStatus };
+          updatedTasksByStatus[status] = data;
+          setTasksByStatus(updatedTasksByStatus);
+
+          // Update task positions based on the new order
+          data.forEach(async (task: Task, index: number) => {
+            if (task.position !== index) {
+              await updateTaskPosition(task.id, index);
             }
-          </View>
-        ))
-      }
-    </ScrollView>
+          });
+        }}
+      />
+    </View>
+  );
+
+  return (
+    <>
+      <FlatList
+        data={Object.entries(tasksByStatus)}
+        renderItem={({ item }) => renderStatusContainer(item)}
+        keyExtractor={(item) => item[0]}
+      />
+      {showEditTaskModal && <EditTask taskToEdit={taskToEdit} showModal={showEditTaskModal} setShowModal={setShowEditTaskModal} />}
+    </>
   );
 }

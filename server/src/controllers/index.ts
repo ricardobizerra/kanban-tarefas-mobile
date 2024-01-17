@@ -88,6 +88,32 @@ class TaskController {
         }
     }
 
+    async updateTaskPosition(req: Request, res: Response) {
+        const { id } = req.params;
+        const { position }: {
+            position: number;
+        } = req.body;
+
+        try {
+            const task = await prisma.task.update({
+                where: {
+                    id,
+                },
+                data: {
+                    position,
+                },
+            });
+
+            return res.status(200).json({
+                data: task,
+            })
+        } catch (error) {
+            return res.status(500).json({
+                error,
+            })
+        }
+    }
+
     async updateTaskStar(req: Request, res: Response) {
         const { id } = req.params;
         const star = req.body.star as boolean;

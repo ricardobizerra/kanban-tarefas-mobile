@@ -4,6 +4,7 @@ interface Task {
     description: string;
     status: string;
     star: boolean;
+    position: number;
     createdAt: Date;
     updatedAt: Date;
     concludedAt: Date;

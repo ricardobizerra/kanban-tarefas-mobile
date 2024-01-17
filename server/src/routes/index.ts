@@ -10,5 +10,6 @@ router.route("/tasks").post(TaskController.createTask);
 
 router.route("/tasks/:id").put(TaskController.updateTaskStatus);
 router.route("/star-task/:id").put(TaskController.updateTaskStar);
+router.route("/position-task/:id").put(TaskController.updateTaskPosition);
 
 export default router;

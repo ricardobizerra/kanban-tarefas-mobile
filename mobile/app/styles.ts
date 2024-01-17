@@ -6,6 +6,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         borderColor: 'gray',
         padding: 16,
+        marginBottom: 16,
     },
     taskStatusTitle: {
         color: '#fff',
